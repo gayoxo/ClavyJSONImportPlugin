@@ -93,7 +93,7 @@ public class CollectionJSON {
 			try {
 				procesaJSON(file,PathDes, log);
 			} catch (JsonIOException e) {
-				log.add(e);
+				log.add("Error input file "+ file.getName());
 				e.printStackTrace();
 			} catch (JsonSyntaxException e) {
 				// TODO Auto-generated catch block
