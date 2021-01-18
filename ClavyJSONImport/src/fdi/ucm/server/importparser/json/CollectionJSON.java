@@ -143,7 +143,10 @@ public class CollectionJSON {
 			CompleteElementType CETY=PathFinder.get("/");
 			
 			if (CETY==null) {
-			CETY=new CompleteElementType("entry", CG);
+				
+			
+				
+			CETY=new CompleteTextElementType("entry", CG);
 			CETY.setClassOfIterator(CETY);
 			CG.getSons().add(CETY);
 			
@@ -178,6 +181,12 @@ public class CollectionJSON {
 				{
 					CompleteElementType este= LL.get(i);
 					
+					if (este instanceof CompleteTextElementType)
+					{
+						CompleteTextElement EsteElem=new CompleteTextElement((CompleteTextElementType) este, Jolem.getAsString());
+						CD.getDescription().add(EsteElem);
+					}
+					
 					//AQUI INSERTAR
 					
 				}
@@ -196,7 +205,7 @@ public class CollectionJSON {
 					CompleteElementType CETY=PathFinder.get(JSonElemProcc.getKey());
 					
 					if (CETY==null) {
-					CETY=new CompleteTextElementType("entry", CG);
+					CETY=new CompleteTextElementType(JSonElemProcc.getKey(), CG);
 					CETY.setClassOfIterator(CETY);
 					CG.getSons().add(CETY);
 					
@@ -205,7 +214,8 @@ public class CollectionJSON {
 					
 					if (CETY instanceof CompleteTextElementType)
 					{
-					//AQUI INSERTAR EN DOCUMENTO
+						CompleteTextElement EsteElem=new CompleteTextElement((CompleteTextElementType) CETY, JSonElemProcc.getValue().getAsString());
+						CD.getDescription().add(EsteElem);
 					}
 				}
 			}
