@@ -1,34 +1,20 @@
 package fdi.ucm.server.importparser.json;
 
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Scanner;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
@@ -59,19 +45,24 @@ public class CollectionJSON {
 		C.debugfile=true;
 		C.procesaJSONFolder("files/ex1/Patient", log);
 		
-//		 try {
+		 try {
 				String FileIO = System.getProperty("user.home")+File.separator+System.currentTimeMillis()+".clavy";
 				
 				System.out.println(FileIO);
-//				
-//				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FileIO));
-//
-//				oos.writeObject(C.getColeccion());
-//
-//				oos.close();
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
+				
+				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FileIO));
+
+				oos.writeObject(C.getCollection());
+
+				oos.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+	}
+
+
+	private CompleteCollection getCollection() {
+		return C;
 	}
 
 
@@ -111,7 +102,7 @@ public class CollectionJSON {
 			if (file.getName().toLowerCase().endsWith(".json"))
 			{
 			try {
-				procesaJSON(file,PathDes, log);
+				procesaJSON(file,PathDes);
 			} catch (JsonIOException e) {
 				System.err.println("Error input file "+ file.getName());
 				log.add("Error input file "+ file.getName());
@@ -130,7 +121,7 @@ public class CollectionJSON {
 	}
 
 
-	private void procesaJSON(File JSonFile, String pathDes, ArrayList<String> log2) throws JsonIOException, JsonSyntaxException, FileNotFoundException {
+	private void procesaJSON(File JSonFile, String pathDes) throws JsonIOException, JsonSyntaxException, FileNotFoundException {
 	
 		JsonElement JSONELEM = new JsonParser().parse(new FileReader(JSonFile));
 		
@@ -177,9 +168,9 @@ public class CollectionJSON {
 			
 			for (int i = 0; i < ArrayElem.size(); i++) {
 				JsonElement Jolem = ArrayElem.get(i);
+				CompleteElementType este= LL.get(i);
 				if (Jolem.isJsonPrimitive())
 				{
-					CompleteElementType este= LL.get(i);
 					
 					if (este instanceof CompleteTextElementType)
 					{
@@ -190,36 +181,149 @@ public class CollectionJSON {
 					//AQUI INSERTAR
 					
 				}
+				else
+					procesaObjeto(Jolem,"entry/",este,CD);
 			}	
 				
 				
 			MultivaluedList.put(null, listaHermanos);	
 			}
-		else
+		else if (JSONELEM instanceof JsonObject)
 		{
 			
 			JsonObject JobElemElem = JSONELEM.getAsJsonObject();
 			for (Entry<String, JsonElement> JSonElemProcc : JobElemElem.entrySet()) {
+				
+				CompleteElementType CETY=PathFinder.get(JSonElemProcc.getKey());
+				
+				if (CETY==null) {
+				CETY=new CompleteTextElementType(JSonElemProcc.getKey(), CG);
+				CETY.setClassOfIterator(CETY);
+				CG.getSons().add(CETY);
+				
+				PathFinder.put(JSonElemProcc.getKey(),CETY);
+				}
+				
 				if (JSonElemProcc.getValue().isJsonPrimitive())
 				{
-					CompleteElementType CETY=PathFinder.get(JSonElemProcc.getKey());
 					
-					if (CETY==null) {
-					CETY=new CompleteTextElementType(JSonElemProcc.getKey(), CG);
-					CETY.setClassOfIterator(CETY);
-					CG.getSons().add(CETY);
-					
-					PathFinder.put(JSonElemProcc.getKey(),CETY);
-					}
 					
 					if (CETY instanceof CompleteTextElementType)
 					{
 						CompleteTextElement EsteElem=new CompleteTextElement((CompleteTextElementType) CETY, JSonElemProcc.getValue().getAsString());
 						CD.getDescription().add(EsteElem);
 					}
-				}
+				}else
+					procesaObjeto(JSonElemProcc.getValue(),JSonElemProcc.getKey()+"/",
+							CETY,CD);
 			}
 			
+		}
+		
+	}
+
+
+	private void procesaObjeto(JsonElement JSONELEM, String stringPadre, CompleteElementType PadreEleme, CompleteDocuments cD) {
+		if (JSONELEM.isJsonArray()) {
+				CompleteElementType CETY=PathFinder.get(stringPadre+"entry");
+				
+				if (CETY==null) {
+					
+				
+					
+				CETY=new CompleteTextElementType("entry",PadreEleme, CG);
+				CETY.setClassOfIterator(CETY);
+				PadreEleme.getSons().add(CETY);
+				
+				PathFinder.put(stringPadre+"entry",CETY);
+				}
+				
+				
+				if (!CETY.isMultivalued())
+					CETY.setMultivalued(true);
+				
+				HashMap<CompleteElementType, List<CompleteElementType>> listaHermanos=MultivaluedList.get(PadreEleme);
+				
+				JsonArray ArrayElem = JSONELEM.getAsJsonArray();
+				
+				if (listaHermanos==null)
+					listaHermanos=new HashMap<CompleteElementType, List<CompleteElementType>>();
+
+				
+				List<CompleteElementType> LL=listaHermanos.get(CETY);
+				if (LL==null)
+				{
+					LL=new LinkedList<CompleteElementType>();
+					LL.add(CETY);
+					
+					if (CETY.getFather()==PadreEleme)
+						listaHermanos.put(CETY, LL);
+				}
+				
+				while (ArrayElem.size()>LL.size())
+					produceHermano(LL,CETY,PadreEleme);
+				
+				for (int i = 0; i < ArrayElem.size(); i++) {
+					JsonElement Jolem = ArrayElem.get(i);
+					CompleteElementType este= LL.get(i);
+					if (Jolem.isJsonPrimitive())
+					{
+						
+						if (este instanceof CompleteTextElementType)
+						{
+							CompleteTextElement EsteElem=new CompleteTextElement((CompleteTextElementType) este, Jolem.getAsString());
+							cD.getDescription().add(EsteElem);
+						}
+						
+						//AQUI INSERTAR
+						
+					}
+					else
+						procesaObjeto(Jolem,stringPadre+"entry/",este,cD);
+				}	
+					
+					
+				MultivaluedList.put(PadreEleme, listaHermanos);	
+		}
+		else if (JSONELEM instanceof JsonObject)
+		{
+			JsonObject JobElemElem = JSONELEM.getAsJsonObject();
+			for (Entry<String, JsonElement> JSonElemProcc : JobElemElem.entrySet()) {
+				
+				CompleteElementType CETY=PathFinder.get(stringPadre+JSonElemProcc.getKey());
+				
+				if (CETY==null) {
+					CETY=new CompleteTextElementType(JSonElemProcc.getKey(),PadreEleme, CG);
+					CETY.setClassOfIterator(CETY);
+					PadreEleme.getSons().add(CETY);
+					PathFinder.put(stringPadre+JSonElemProcc.getKey(),CETY);
+				}
+				
+
+				if (CETY.getFather()!=PadreEleme)
+				{
+					CompleteTextElementType CETY2=new CompleteTextElementType(JSonElemProcc.getKey(),PadreEleme, CG);
+					CETY2.setClassOfIterator(CETY);
+					PadreEleme.getSons().add(CETY2);
+					CETY=CETY2;
+				}
+				
+				
+				if (JSonElemProcc.getValue().isJsonPrimitive())
+				{
+					
+	
+					if (CETY instanceof CompleteTextElementType) {
+						CompleteTextElement EsteElem=new CompleteTextElement((CompleteTextElementType) CETY, JSonElemProcc.getValue().getAsString());
+						cD.getDescription().add(EsteElem);
+					}
+						
+				}else
+					procesaObjeto(JSonElemProcc.getValue(),stringPadre+JSonElemProcc.getKey()+"/",
+								CETY,cD);
+				
+		
+			}
 		}
 		
 	}
