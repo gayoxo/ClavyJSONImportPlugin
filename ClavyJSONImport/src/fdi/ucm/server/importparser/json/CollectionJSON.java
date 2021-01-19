@@ -61,12 +61,12 @@ public class CollectionJSON {
 	}
 
 
-	private CompleteCollection getCollection() {
+	public CompleteCollection getCollection() {
 		return C;
 	}
 
 
-	private void procesaJSONFolder(String JSONFolder, ArrayList<String> log) {
+	public void procesaJSONFolder(String JSONFolder, ArrayList<String> log) {
 		C=new CompleteCollection(File.separator+System.currentTimeMillis()+"", JSONFolder);
 		
 		PathFinder=new HashMap<String, CompleteElementType>();
@@ -97,6 +97,10 @@ public class CollectionJSON {
         }
 		
 		String PathDes=prop.getProperty("desc");
+		if (PathDes==null)
+			PathDes="";
+		
+		PathDes=PathDes.toLowerCase();
 		
 		for (File file : JSONFilesIN)
 			if (file.getName().toLowerCase().endsWith(".json"))
@@ -172,6 +176,9 @@ public class CollectionJSON {
 				if (Jolem.isJsonPrimitive())
 				{
 					
+					if (pathDes.equals("/"))
+						CD.setDescriptionText(CD.getDescriptionText()+" "+Jolem.getAsString());
+					
 					if (este instanceof CompleteTextElementType)
 					{
 						CompleteTextElement EsteElem=new CompleteTextElement((CompleteTextElementType) este, Jolem.getAsString());
@@ -182,7 +189,7 @@ public class CollectionJSON {
 					
 				}
 				else
-					procesaObjeto(Jolem,"entry/",este,CD);
+					procesaObjeto(Jolem,"entry/",este,CD,pathDes);
 			}	
 				
 				
@@ -207,6 +214,9 @@ public class CollectionJSON {
 				if (JSonElemProcc.getValue().isJsonPrimitive())
 				{
 					
+					if (pathDes.equals(JSonElemProcc.getKey().toLowerCase()))
+						CD.setDescriptionText(CD.getDescriptionText()+" "+JSonElemProcc.getValue().getAsString());
+					
 					
 					if (CETY instanceof CompleteTextElementType)
 					{
@@ -215,7 +225,7 @@ public class CollectionJSON {
 					}
 				}else
 					procesaObjeto(JSonElemProcc.getValue(),JSonElemProcc.getKey()+"/",
-							CETY,CD);
+							CETY,CD,pathDes);
 			}
 			
 		}
@@ -223,7 +233,8 @@ public class CollectionJSON {
 	}
 
 
-	private void procesaObjeto(JsonElement JSONELEM, String stringPadre, CompleteElementType PadreEleme, CompleteDocuments cD) {
+	private void procesaObjeto(JsonElement JSONELEM, String stringPadre,
+			CompleteElementType PadreEleme, CompleteDocuments cD, String pathDes) {
 		if (JSONELEM.isJsonArray()) {
 				CompleteElementType CETY=PathFinder.get(stringPadre+"entry");
 				
@@ -268,6 +279,9 @@ public class CollectionJSON {
 					CompleteElementType este= LL.get(i);
 					if (Jolem.isJsonPrimitive())
 					{
+						if (pathDes.equals((stringPadre+"entry").toLowerCase()))
+							cD.setDescriptionText(cD.getDescriptionText()+" "+Jolem.getAsString());
+						
 						
 						if (este instanceof CompleteTextElementType)
 						{
@@ -279,7 +293,7 @@ public class CollectionJSON {
 						
 					}
 					else
-						procesaObjeto(Jolem,stringPadre+"entry/",este,cD);
+						procesaObjeto(Jolem,stringPadre+"entry/",este,cD,pathDes);
 				}	
 					
 					
@@ -312,6 +326,9 @@ public class CollectionJSON {
 				if (JSonElemProcc.getValue().isJsonPrimitive())
 				{
 					
+					if (pathDes.equals((stringPadre+JSonElemProcc.getKey()).toLowerCase()))
+						cD.setDescriptionText(cD.getDescriptionText()+" "+JSonElemProcc.getValue().getAsString());
+					
 	
 					if (CETY instanceof CompleteTextElementType) {
 						CompleteTextElement EsteElem=new CompleteTextElement((CompleteTextElementType) CETY, JSonElemProcc.getValue().getAsString());
@@ -320,7 +337,7 @@ public class CollectionJSON {
 						
 				}else
 					procesaObjeto(JSonElemProcc.getValue(),stringPadre+JSonElemProcc.getKey()+"/",
-								CETY,cD);
+								CETY,cD,pathDes);
 				
 		
 			}
