@@ -404,5 +404,14 @@ public class CollectionJSON {
 		
 		
 	}
+	
+	public HashMap<String, CompleteElementType> getPathFinder() {
+		return PathFinder;
+	}
+	
+	public HashMap<CompleteElementType, HashMap<CompleteElementType, List<CompleteElementType>>> getMultivaluedList() {
+		return MultivaluedList;
+	}
+	
 
 }
