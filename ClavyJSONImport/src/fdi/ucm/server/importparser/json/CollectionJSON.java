@@ -64,15 +64,49 @@ public class CollectionJSON {
 	public CompleteCollection getCollection() {
 		return C;
 	}
-
-
-	public void procesaJSONFolder(String JSONFolder, ArrayList<String> log) {
-		C=new CompleteCollection(File.separator+System.currentTimeMillis()+"", JSONFolder);
+	
+	
+	
+	private void init(ArrayList<String> log, String collection) {
+		C=new CompleteCollection(File.separator+System.currentTimeMillis()+"", collection);
 		
 		PathFinder=new HashMap<String, CompleteElementType>();
 		MultivaluedList=new HashMap<CompleteElementType, HashMap<CompleteElementType,List<CompleteElementType>>>();
 		
 		this.log=log;
+		
+	}
+	
+
+	public void procesaJSONArrayFolder(JsonArray JSONArray, ArrayList<String> log, String Collection, Properties prop) {
+		init(log,Collection);
+		
+		CG=new CompleteGrammar(Collection, Collection, C);
+		C.getMetamodelGrammar().add(CG);
+		
+		
+		
+		
+		String PathDes=prop.getProperty("desc");
+		if (PathDes==null)
+			PathDes="";
+		
+		PathDes=PathDes.toLowerCase();
+		
+		for (JsonElement jsonobject : JSONArray)
+
+				procesaJSON(jsonobject,PathDes,"");
+		
+			
+	}
+
+	
+
+
+	public void procesaJSONFolder(String JSONFolder, ArrayList<String> log) {
+		init(log,JSONFolder);
+		
+		
 		File RootFolder=new File(JSONFolder);
 		if (!RootFolder.isDirectory())
 			return;
@@ -106,7 +140,9 @@ public class CollectionJSON {
 			if (file.getName().toLowerCase().endsWith(".json"))
 			{
 			try {
-				procesaJSON(file,PathDes);
+				JsonElement JSONELEM = new JsonParser().parse(new FileReader(file));
+				
+				procesaJSON(JSONELEM,PathDes,file.getName().split("\\.")[0]);
 			} catch (JsonIOException e) {
 				System.err.println("Error input file "+ file.getName());
 				log.add("Error input file "+ file.getName());
@@ -125,11 +161,11 @@ public class CollectionJSON {
 	}
 
 
-	private void procesaJSON(File JSonFile, String pathDes) throws JsonIOException, JsonSyntaxException, FileNotFoundException {
+	private void procesaJSON(JsonElement JSONELEM, String pathDes, String description) {
 	
-		JsonElement JSONELEM = new JsonParser().parse(new FileReader(JSonFile));
 		
-		CompleteDocuments CD=new CompleteDocuments(C,JSonFile.getName().split("\\.")[0],"");
+		
+		CompleteDocuments CD=new CompleteDocuments(C,description,"");
 		C.getEstructuras().add(CD);
 		
 		if (JSONELEM.isJsonArray())
