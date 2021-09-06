@@ -168,6 +168,10 @@ public class CollectionJSON {
 		CompleteDocuments CD=new CompleteDocuments(C,description,"");
 		C.getEstructuras().add(CD);
 		
+		
+		//parece igual pero el comportamiento es diferente al ser el padre directamente la gramatica
+		
+		
 		if (JSONELEM.isJsonArray())
 			{
 			
@@ -337,6 +341,10 @@ public class CollectionJSON {
 		}
 		else if (JSONELEM instanceof JsonObject)
 		{
+			
+			
+			//Que Ocurre si mi padre es un multievalado, se me va
+			
 			JsonObject JobElemElem = JSONELEM.getAsJsonObject();
 			for (Entry<String, JsonElement> JSonElemProcc : JobElemElem.entrySet()) {
 				
@@ -350,6 +358,7 @@ public class CollectionJSON {
 				}
 				
 
+				//aqui parece que lo estoy intentando controlar, pero no se lo asigno bien a los hermanos o no se
 				if (CETY.getFather()!=PadreEleme)
 				{
 					CompleteTextElementType CETY2=new CompleteTextElementType(JSonElemProcc.getKey(),PadreEleme, CG);
