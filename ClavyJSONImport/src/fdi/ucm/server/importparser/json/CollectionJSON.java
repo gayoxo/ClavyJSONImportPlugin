@@ -409,8 +409,8 @@ public class CollectionJSON {
 	}
 
 
-	private boolean revisaTest(CompleteDocuments cD) {
-		System.out.println("Document Debug");
+	protected boolean revisaTest(CompleteDocuments cD) {
+
 		HashSet<CompleteElementType> procesado=new HashSet<>();
 //			System.out.println(cD.getDescriptionText());
 			for (CompleteElement complete_elemento : cD.getDescription()) {

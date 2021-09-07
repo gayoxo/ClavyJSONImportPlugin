@@ -48,4 +48,14 @@ public class mainProcesso_ex2_Observation extends CollectionJSON{
 		}
 	}
 	
+	@Override
+	protected boolean revisaTest(CompleteDocuments cD) {
+		if (!super.revisaTest(cD))
+		{
+			System.err.println("Error de duplicado");
+			return false;
+		}else
+			return true;
+	}
+	
 }
