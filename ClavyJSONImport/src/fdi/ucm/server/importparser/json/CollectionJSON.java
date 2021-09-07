@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -24,6 +25,7 @@ import com.google.gson.JsonSyntaxException;
 
 import fdi.ucm.server.modelComplete.collection.CompleteCollection;
 import fdi.ucm.server.modelComplete.collection.document.CompleteDocuments;
+import fdi.ucm.server.modelComplete.collection.document.CompleteElement;
 import fdi.ucm.server.modelComplete.collection.document.CompleteTextElement;
 import fdi.ucm.server.modelComplete.collection.grammar.CompleteElementType;
 import fdi.ucm.server.modelComplete.collection.grammar.CompleteGrammar;
@@ -223,6 +225,7 @@ public class CollectionJSON {
 					{
 						CompleteTextElement EsteElem=new CompleteTextElement((CompleteTextElementType) este, Jolem.getAsString());
 						CD.getDescription().add(EsteElem);
+						revisaTest(CD);
 					}
 					
 					//AQUI INSERTAR
@@ -262,6 +265,7 @@ public class CollectionJSON {
 					{
 						CompleteTextElement EsteElem=new CompleteTextElement((CompleteTextElementType) CETY, JSonElemProcc.getValue().getAsString());
 						CD.getDescription().add(EsteElem);
+						revisaTest(CD);
 					}
 				}else
 					procesaObjeto(JSonElemProcc.getValue(),JSonElemProcc.getKey()+"/",
@@ -288,6 +292,17 @@ public class CollectionJSON {
 				
 				PathFinder.put(stringPadre+"entry",CETY);
 				}
+				
+				
+				if (CETY.getFather()!=PadreEleme)
+				{
+					CompleteTextElementType CETY2=new CompleteTextElementType("entry",PadreEleme, CG);
+					CETY2.setClassOfIterator(CETY);
+					PadreEleme.getSons().add(CETY2);
+					CETY=CETY2;
+				}
+				
+				
 				
 				
 				if (!CETY.isMultivalued())
@@ -327,6 +342,8 @@ public class CollectionJSON {
 						{
 							CompleteTextElement EsteElem=new CompleteTextElement((CompleteTextElementType) este, Jolem.getAsString());
 							cD.getDescription().add(EsteElem);
+							
+							revisaTest(cD);
 						}
 						
 						//AQUI INSERTAR
@@ -378,6 +395,7 @@ public class CollectionJSON {
 					if (CETY instanceof CompleteTextElementType) {
 						CompleteTextElement EsteElem=new CompleteTextElement((CompleteTextElementType) CETY, JSonElemProcc.getValue().getAsString());
 						cD.getDescription().add(EsteElem);
+						revisaTest(cD);
 					}
 						
 				}else
@@ -388,6 +406,34 @@ public class CollectionJSON {
 			}
 		}
 		
+	}
+
+
+	private boolean revisaTest(CompleteDocuments cD) {
+		System.out.println("Document Debug");
+		HashSet<CompleteElementType> procesado=new HashSet<>();
+//			System.out.println(cD.getDescriptionText());
+			for (CompleteElement complete_elemento : cD.getDescription()) {
+				
+				
+				if (procesado.contains(complete_elemento.getHastype()))
+					return true;
+				
+				
+				procesado.add(complete_elemento.getHastype());
+				
+//				System.out.print(complete_elemento.getHastype().getName()+"^^"+
+//						complete_elemento.getHastype().toString()+"-<>-"+complete_elemento.getHastype().getClassOfIterator().toString());
+//				
+//				if (complete_elemento instanceof CompleteTextElement && !((CompleteTextElement) complete_elemento).getValue().trim().isEmpty())
+//					System.out.print("-$$-"+((CompleteTextElement) complete_elemento).getValue());
+//				
+//				
+//				System.out.println();
+				
+			}
+			
+		return false;
 	}
 
 
